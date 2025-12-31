@@ -1,47 +1,56 @@
 .resolve_provider <- function(provider, model, base_url) {
-  # Default endpoints (full chat completions URL)
-  ollama_default  <- "http://127.0.0.1:11434/v1/chat/completions"
-  lmstudio_default <- "http://127.0.0.1:1234/v1/chat/completions"
+  # Defaults
+  ollama_chat   <- "http://127.0.0.1:11434/v1/chat/completions"
+  lmstudio_chat <- "http://127.0.0.1:1234/v1/chat/completions"
 
   if (provider == "auto") {
-    if (.ping_endpoint(ollama_default)) {
+    if (.ping_ollama()) {
       provider <- "ollama"
-    } else if (.ping_endpoint(lmstudio_default)) {
+    } else if (.ping_openai_models("http://127.0.0.1:1234")) {
       provider <- "lmstudio"
     } else {
       cli::cli_abort(c(
         "No local LLM server detected.",
         "i" = "Start Ollama (recommended) or LM Studio, then try again.",
         "i" = "Expected endpoints:",
-        " " = "- Ollama: {ollama_default}",
-        " " = "- LM Studio: {lmstudio_default}"
+        " " = "- Ollama: {ollama_chat}",
+        " " = "- LM Studio: {lmstudio_chat}"
       ))
     }
   }
 
   if (provider == "ollama") {
     list(
-      base_url = base_url %||% ollama_default,
+      base_url = base_url %||% ollama_chat,
       model    = model %||% "gemma3:12b"
     )
   } else {
     list(
-      base_url = base_url %||% lmstudio_default,
+      base_url = base_url %||% lmstudio_chat,
       model    = model %||% "google/gemma-3-12b"
     )
   }
 }
 
-.ping_endpoint <- function(url) {
-  # Fast, low-stakes request: attempt HEAD; if fails, try GET
+.ping_ollama <- function() {
   ok <- FALSE
   try({
-    resp <- httr2::request(url) |>
-      httr2::req_method("POST") |>
-      httr2::req_body_json(list(model = "ping", messages = list(list(role="user", content="ping")))) |>
+    httr2::request("http://127.0.0.1:11434/api/tags") |>
       httr2::req_timeout(2) |>
       httr2::req_perform()
-    ok <- httr2::resp_status(resp) < 500
+    ok <- TRUE
+  }, silent = TRUE)
+  ok
+}
+
+.ping_openai_models <- function(base) {
+  ok <- FALSE
+  url <- paste0(base, "/v1/models")
+  try({
+    httr2::request(url) |>
+      httr2::req_timeout(2) |>
+      httr2::req_perform()
+    ok <- TRUE
   }, silent = TRUE)
   ok
 }

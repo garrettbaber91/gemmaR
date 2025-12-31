@@ -20,7 +20,7 @@
 score_gemma <- function(
     data,
     text_col,
-    provider = c("auto", "ollama", "lmstudio"),
+    provider = c("ollama", "auto", "lmstudio"),
     model = NULL,
     base_url = NULL,
     out_cols = c("gemma_pos", "gemma_neg"),
