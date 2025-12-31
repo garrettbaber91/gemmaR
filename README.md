@@ -4,7 +4,9 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-gemmaR is an R package to score positive and negative affect using Gemma 3 (12B) locally in R.
+gemmaR is an R package to score positive and negative affect from text using Gemma 3 (12B) locally in R. 
+
+Affect scores ('gemma_pos' and 'gemma_neg') are rated on 5-pt Likert scales (1–5), where 1 represents none or very little  emotion and 5 represents very intense positive emotion
 
 ## Installation
 
@@ -24,10 +26,9 @@ Ollama runs in the background and automatically starts when needed — you do no
 ## One-Time Setup: Install Ollama
 
 macOS / Windows / Linux
-	1.	Download and install Ollama from:
-https://ollama.com
 
-	2.	Open the Ollama application once after installation
+1.	Download and install Ollama from: https://ollama.com
+2.	Open the Ollama application once after installation
 (this starts the background service).
 
 You only need to do this one time.
