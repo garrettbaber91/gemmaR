@@ -42,9 +42,6 @@ Open Terminal (not R) and run:
 ollama pull gemma3:12b
 ```
 
-To use this package, install Ollama ...Local Runtime
-
-ollama pull gemma3:12b
 
 ## Troubleshooting
 
