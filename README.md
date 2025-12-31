@@ -26,6 +26,7 @@ Ollama runs in the background and automatically starts when needed — you do no
 macOS / Windows / Linux
 	1.	Download and install Ollama from:
 https://ollama.com
+
 	2.	Open the Ollama application once after installation
 (this starts the background service).
 
