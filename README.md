@@ -13,12 +13,50 @@ devtools::install_github("garrettbaber91/gemmaR")
 
 ```
 
-## Local Runtime
+## Local Runtime (Required)
 
-# one-time
+gemmaR runs fully locally using a lightweight local inference runtime called Ollama.
+Your data never leaves your machine.
+
+Ollama runs in the background and automatically starts when needed — you do not need to manually start a server each time you use gemmaR.
+
+
+## One-Time Setup: Install Ollama
+
+macOS / Windows / Linux
+	1.	Download and install Ollama from:
+https://ollama.com
+	2.	Open the Ollama application once after installation
+(this starts the background service).
+
+You only need to do this one time.
+
+## One-Time Setup: Download the Gemma Model
+
+After installing Ollama, download the Gemma 3 (12B) model once.
+
+Open Terminal (not R) and run:
+
+``` bash
+ollama pull gemma3:12b
+```
+
+To use this package, install Ollama ...Local Runtime
+
 ollama pull gemma3:12b
 
+## Troubleshooting
 
+If you see an error like:
+
+> No local LLM server detected
+
+Make sure that:
+	•	Ollama is installed
+	•	You have opened Ollama at least once
+	•	The model was downloaded with ollama pull gemma3:12b
+
+Then restart R and try again.
 
 ## Example
 
@@ -37,13 +75,7 @@ test_df <- tibble(
   )
 )
 
-out <- score_gemma(
-  test_df,
-  text,
-  provider = "ollama",
-  model = "gemma3:12b",
-  base_url = "http://127.0.0.1:11434/v1/chat/completions"
-)
+out <- score_gemma(data, text) # text is the name of the column containing text to be analyzed
 
 print(out)
 ```
