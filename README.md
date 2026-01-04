@@ -51,9 +51,13 @@ If you see an error like:
 > No local LLM server detected
 
 Make sure that:
-	•	Ollama is installed
-	•	You have opened Ollama at least once
-	•	The model was downloaded with ollama pull gemma3:12b
+
+•	Ollama is installed
+
+•	You have opened Ollama at least once
+
+•	The model was downloaded with ollama pull gemma3:12b
+
 
 Then restart R and try again.
 
