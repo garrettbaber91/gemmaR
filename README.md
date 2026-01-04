@@ -69,7 +69,7 @@ This is a basic example which shows you how to solve a common problem:
 library(gemmaR)
 library(tibble)
 
-test_df <- tibble(
+data <- tibble(
   SubjectID = c(1, 2, 3),
   text = c(
     "I felt calm and happy, floating on a cloud",
