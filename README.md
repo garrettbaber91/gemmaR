@@ -4,7 +4,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-gemmaR is an R package to score affect from text using Gemma 3 (12B) running locally in R. It supports three scoring approaches: Positive/Negative Affect, the Circumplex Model (Valence/Arousal), and the full 20-item PANAS.
+gemmaR is an R package to score affect from text using Gemma 3 (12B) running locally in R. It supports three scoring approaches: Positive/Negative Affect, the Circumplex Model of Affect (Russell, 1980), and the full 20-item PANAS (Watson & Tellegen, 1988).
 
 ## Installation
 
@@ -74,7 +74,7 @@ Returns two new columns: `gemma_PA` and `gemma_NA`.
 
 ### `gemma_circumplex()`
 
-Scores **Valence** and **Arousal** based on the circumplex model of affect.
+Scores **Valence** and **Arousal** based on the Circumplex Model of Affect (Russell, 1980).
 
 - Valence: −2 (strongly negative) … 0 (neutral) … 2 (strongly positive)
 - Arousal: 1 (very low intensity) … 5 (very high intensity)
@@ -85,7 +85,7 @@ Returns two new columns: `gemma_valence` and `gemma_arousal`.
 
 ### `gemma_panas()`
 
-Scores all **20 PANAS items** (Watson et al., 1988) on a 1–5 scale.
+Scores all **20 PANAS items** (Watson & Tellegen, 1988) on a 1–5 scale.
 
 - 1 = very slightly or not at all
 - 5 = extremely
@@ -107,3 +107,15 @@ All three functions share the same optional arguments:
 | `.progress` | `TRUE` | Show a progress bar |
 | `timeout_s` | `120` | Request timeout in seconds |
 | `retries` | `2` | Retries on transient failures |
+
+## Citation
+
+If you use gemmaR in your research, please cite it as:
+
+Baber, G. (2025). *gemmaR: Score affect from text using local Gemma 3* (R package version 0.1.0). https://github.com/garrettbaber91/gemmaR
+
+## References
+
+Russell, J. A. (1980). A circumplex model of affect. *Journal of Personality and Social Psychology, 39*(6), 1161–1178. https://doi.org/10.1037/h0077714
+
+Watson, D., Clark, L. A., & Tellegen, A. (1988). Development and validation of brief measures of positive and negative affect: The PANAS scales. *Journal of Personality and Social Psychology, 54*(6), 1063–1070. https://doi.org/10.1037/0022-3514.54.6.1063
