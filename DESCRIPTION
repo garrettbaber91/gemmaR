@@ -1,9 +1,13 @@
 Package: gemmaR
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Score Affect from Text Using Local Gemma 3
+Version: 0.1.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    person("Garrett", "Baber", , "garrett.baber@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-8467-7726"))
+Description: Provides functions to rate affect dimensions from text using Gemma 3
+    (12B) running locally via Ollama or LM Studio. Supports Positive/Negative
+    Affect, the Circumplex Model (Valence and Arousal), and the 20-item Positive
+    and Negative Affect Schedule (PANAS; Watson et al., 1988).
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

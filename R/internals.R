@@ -21,13 +21,45 @@
 
   if (provider == "ollama") {
     list(
-      base_url = base_url %||% ollama_chat,
-      model    = model %||% "gemma3:12b"
+      base_url = rlang::`%||%`(base_url, ollama_chat),
+      model    = rlang::`%||%`(model, "gemma3:12b")
     )
   } else {
     list(
-      base_url = base_url %||% lmstudio_chat,
-      model    = model %||% "google/gemma-3-12b"
+      base_url = rlang::`%||%`(base_url, lmstudio_chat),
+      model    = rlang::`%||%`(model, "google/gemma-3-12b")
+    )
+  }
+}
+
+.prompt_spec <- function(prompt_type) {
+  prompt_type <- match.arg(prompt_type, c("pa_na", "valence_arousal", "panas"))
+
+  if (prompt_type == "pa_na") {
+    list(
+      sys_prompt  = .gemma_sys_prompt,
+      reminder    = "Remember: respond ONLY as 'POS_INT,NEG_INT' (e.g., '3,1').",
+      n_scores    = 2L,
+      max_tokens  = 10L
+    )
+  } else if (prompt_type == "valence_arousal") {
+    list(
+      sys_prompt  = .gemma_sys_prompt_valence_arousal,
+      reminder    = "Remember: respond ONLY as 'VALENCE_INT,AROUSAL_INT' (e.g., '-1,4').",
+      n_scores    = 2L,
+      max_tokens  = 10L
+    )
+  } else {
+    list(
+      sys_prompt  = .gemma_sys_prompt_panas,
+      reminder    = paste0(
+        "Remember: respond ONLY as 20 integers separated by commas in this exact order: ",
+        "Interested,Distressed,Excited,Upset,Strong,Guilty,Scared,Hostile,Enthusiastic,",
+        "Proud,Irritable,Alert,Ashamed,Inspired,Nervous,Determined,Attentive,Jittery,",
+        "Active,Afraid (e.g., '3,1,4,2,3,1,1,1,4,2,1,3,1,3,2,4,3,1,3,1')."
+      ),
+      n_scores    = 20L,
+      max_tokens  = 80L
     )
   }
 }
@@ -55,12 +87,18 @@
   ok
 }
 
-.make_rater <- function(sys_prompt, base_url, model, timeout_s, retries) {
+.make_rater <- function(sys_prompt, reminder, prompt_type, n_scores, max_tokens, base_url, model, timeout_s, retries) {
   force(sys_prompt)
+  force(reminder)
+  force(prompt_type)
+  force(n_scores)
+  force(max_tokens)
+
+  na_vec <- rep(NA_integer_, n_scores)
 
   function(text_report) {
     if (is.na(text_report) || stringr::str_trim(text_report) == "") {
-      return(c(NA_integer_, NA_integer_))
+      return(as.list(na_vec))
     }
 
     body <- list(
@@ -72,12 +110,13 @@
           content = paste0(
             "Here is the text report:\n\n",
             text_report,
-            "\n\nRemember: respond ONLY as 'POS_INT,NEG_INT' (e.g., '3,1')."
+            "\n\n",
+            reminder
           )
         )
       ),
       temperature = 0,
-      max_tokens = 10
+      max_tokens  = max_tokens
     )
 
     last_err <- NULL
@@ -91,8 +130,8 @@
 
       if (!inherits(resp, "try-error")) {
         parsed <- httr2::resp_body_json(resp)
-        raw <- parsed$choices[[1]]$message$content %||% ""
-        return(.parse_two_ints(raw))
+        raw <- rlang::`%||%`(parsed$choices[[1]]$message$content, "")
+        return(.parse_scores(raw, prompt_type = prompt_type, n_scores = n_scores))
       }
 
       last_err <- resp
@@ -100,24 +139,39 @@
     }
 
     warning("Request failed after retries: ", as.character(last_err))
-    c(NA_integer_, NA_integer_)
+    as.list(na_vec)
   }
 }
 
-.parse_two_ints <- function(x) {
-  parts <- strsplit(x, ",")[[1]] |> trimws()
+.parse_scores <- function(x, prompt_type = c("pa_na", "valence_arousal", "panas"), n_scores) {
+  prompt_type <- match.arg(prompt_type)
 
-  if (length(parts) != 2) {
-    warning("Unexpected model output: '", x, "'. Returning NA, NA.")
-    return(c(NA_integer_, NA_integer_))
+  na_vec <- as.list(rep(NA_integer_, n_scores))
+
+  # Extract all integers (optionally negative), handles extra labels like "Valence: -1, Arousal: 4"
+  m <- stringr::str_extract_all(x, "-?\\d+")[[1]]
+
+  if (length(m) < n_scores) {
+    warning("Unexpected model output: '", x, "'. Returning NAs.")
+    return(na_vec)
   }
 
-  pos <- suppressWarnings(as.integer(parts[1]))
-  neg <- suppressWarnings(as.integer(parts[2]))
+  vals <- suppressWarnings(as.integer(m[seq_len(n_scores)]))
 
-  if (is.na(pos) || is.na(neg)) {
-    warning("Could not parse integers from model output: '", x, "'.")
+  # Range validation per prompt type
+  if (prompt_type == "pa_na") {
+    vals <- ifelse(!is.na(vals) & (vals < 1 | vals > 5), NA_integer_, vals)
+  } else if (prompt_type == "valence_arousal") {
+    vals[1] <- ifelse(!is.na(vals[1]) & (vals[1] < -2 | vals[1] > 2), NA_integer_, vals[1])
+    vals[2] <- ifelse(!is.na(vals[2]) & (vals[2] < 1  | vals[2] > 5), NA_integer_, vals[2])
+  } else {
+    # panas: all 20 items on 1-5
+    vals <- ifelse(!is.na(vals) & (vals < 1 | vals > 5), NA_integer_, vals)
   }
 
-  c(pos, neg)
+  if (anyNA(vals)) {
+    warning("Could not parse valid ratings from model output: '", x, "'. Returning NA(s).")
+  }
+
+  as.list(vals)
 }
